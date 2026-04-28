@@ -1,0 +1,13 @@
+{
+  "name": "mao-rag-shared",
+  "version": "1.0.0",
+  "private": true,
+  "types": "src/types.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^25.6.0",
+    "typescript": "^5.0.0"
+  }
+}

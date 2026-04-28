@@ -1,0 +1,23 @@
+.answer-display-container {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.answer {
+  background-color: #fff;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  padding: 12px 16px;
+  max-width: 100%;
+}
+
+.answer-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.answer-title {
+  font-size: 14px;
+  color: #1677ff;
+}
