@@ -1,0 +1,36 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find /Users/maopengchao/code/mao-rag/ -maxdepth 2 -type f ! -path */node_modules/*)",
+      "Bash(find /Users/maopengchao/code/mao-rag/ -type f ! -path */node_modules/* ! -name *.md ! -name *.json ! -name *.mjs ! -name *.yaml ! -name *.yml ! -name .env)",
+      "Bash(find /Users/maopengchao/code/mao-rag/ -maxdepth 3 -type d ! -path */node_modules/*)",
+      "Bash(grep -r \"textSplitter\\\\|TextSplitter\\\\|markdown\\\\|Markdown\" /Users/maopengchao/code/mao-rag/node_modules/@langchain/community/dist/ --include=*.js -l)",
+      "Bash(grep -r \"textSplitter\\\\|TextSplitter\\\\|markdown\" /Users/maopengchao/code/mao-rag/node_modules/@langchain/openai/dist/ --include=*.js -l)",
+      "Bash(grep -r TextSplitter /Users/maopengchao/code/mao-rag/node_modules/@langchain/community/dist/ --include=*.js -l)",
+      "Bash(grep -r textSplitter /Users/maopengchao/code/mao-rag/node_modules/@langlang --include=*.json -r)",
+      "Bash(find /Users/maopengchao/code/mao-rag/node_modules -path *@langchain/textsplitters* -name package.json)",
+      "Bash(ls node_modules/@langchain/community/dist/textsplitters*)",
+      "Bash(pnpm add:*)",
+      "Bash(node --check import-knowledge.mjs)",
+      "Bash(node --check naive-rag.mjs)",
+      "Bash(npx tsx:*)",
+      "Bash(node -e \"const { StateGraph } = require\\(''@langchain/langgraph''\\); console.log\\(StateGraph.length, typeof StateGraph\\)\")",
+      "Bash(node -e \"import\\(''@langchain/langgraph''\\).then\\(m => console.log\\(m.StateGraph.length, typeof m.StateGraph\\)\\)\")",
+      "Bash(npx tsc:*)",
+      "Bash(for pkg:*)",
+      "Bash(do ls:*)",
+      "Bash(echo \"✓ $pkg\")",
+      "Bash(echo \"✗ $pkg 未安装\")",
+      "Bash(done)",
+      "Bash(node:*)",
+      "Bash(claude mcp:*)",
+      "Bash(mkdir -p /Users/maopengchao/code/mao-rag/src/client/components/AnswerDisplay)",
+      "Bash(mkdir -p /Users/maopengchao/code/mao-rag/src/client/pages/QueryPage)",
+      "WebSearch"
+    ]
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "supabase"
+  ]
+}
