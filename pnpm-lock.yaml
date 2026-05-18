@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      langsmith:
+        specifier: ^0.7.1
+        version: 0.7.1(openai@6.34.0(ws@8.20.0)(zod@4.3.6))(ws@8.20.0)
       zod:
         specifier: ^4.3.6
         version: 4.3.6
@@ -1863,6 +1866,26 @@ packages:
 
   langsmith@0.5.25:
     resolution: {integrity: sha512-AG7NOymrDmwaWq+wus5hJHZjPFKXwsEdfqGBU3eZiF5242mme+5wuJocdBJKGyU1kgBO7TuLHiqtdyIwl4V4yQ==}
+    peerDependencies:
+      '@opentelemetry/api': '*'
+      '@opentelemetry/exporter-trace-otlp-proto': '*'
+      '@opentelemetry/sdk-trace-base': '*'
+      openai: '*'
+      ws: '>=7'
+    peerDependenciesMeta:
+      '@opentelemetry/api':
+        optional: true
+      '@opentelemetry/exporter-trace-otlp-proto':
+        optional: true
+      '@opentelemetry/sdk-trace-base':
+        optional: true
+      openai:
+        optional: true
+      ws:
+        optional: true
+
+  langsmith@0.7.1:
+    resolution: {integrity: sha512-Wjk90UjNoY5cBHMlNAC/eZx5clI8jnjBOBW8uJu8+MWBtx0QesNjsUiLtjI+I3UnrpxFFpDqGXcnhBjH654Mqg==}
     peerDependencies:
       '@opentelemetry/api': '*'
       '@opentelemetry/exporter-trace-otlp-proto': '*'
@@ -4043,7 +4066,7 @@ snapshots:
       jsonwebtoken: 9.0.3
       load-esm: 1.0.3
       mime-types: 2.1.35
-      retry-axios: 2.6.0(axios@1.15.2)
+      retry-axios: 2.6.0(axios@1.15.2(debug@4.4.3))
       tough-cookie: 4.1.4
     transitivePeerDependencies:
       - supports-color
@@ -4133,6 +4156,13 @@ snapshots:
       vscode-uri: 3.1.0
 
   langsmith@0.5.25(openai@6.34.0(ws@8.20.0)(zod@4.3.6))(ws@8.20.0):
+    dependencies:
+      p-queue: 6.6.2
+    optionalDependencies:
+      openai: 6.34.0(ws@8.20.0)(zod@4.3.6)
+      ws: 8.20.0
+
+  langsmith@0.7.1(openai@6.34.0(ws@8.20.0)(zod@4.3.6))(ws@8.20.0):
     dependencies:
       p-queue: 6.6.2
     optionalDependencies:
@@ -4781,7 +4811,7 @@ snapshots:
 
   resolve-pkg-maps@1.0.0: {}
 
-  retry-axios@2.6.0(axios@1.15.2):
+  retry-axios@2.6.0(axios@1.15.2(debug@4.4.3)):
     dependencies:
       axios: 1.15.2(debug@4.4.3)
 
