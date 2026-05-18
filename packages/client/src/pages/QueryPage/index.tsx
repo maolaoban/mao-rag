@@ -1,27 +1,37 @@
-import React, { useState } from "react";
-import ChatInput from "../../components/ChatInput";
-import AnswerDisplay from "../../components/AnswerDisplay";
-import styles from "./index.module.css";
+import React, { useState, useRef, useEffect } from "react";
+import ChatInput from "@client/components/ChatInput";
+import AnswerDisplay from "@client/components/AnswerDisplay";
+import { SvgIcon } from "@client/components/SvgIcon";
 
 type Message = {
   role: "user" | "assistant";
   content: string;
   isStreaming?: boolean;
+  sources?: string[];
 };
+
+const EXAMPLE_QUESTIONS = [
+  "什么是 RAG？",
+  "如何使用知识库？",
+  "系统支持哪些文件格式？",
+];
 
 const QueryPage: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
-
   const [isStreaming, setIsStreaming] = useState(false);
+  const [webSearch, setWebSearch] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   const handleQuery = async (question: string) => {
-    // Add user message
     const userMsg: Message = { role: "user", content: question };
     const newMessages = [...messages, userMsg];
     setMessages(newMessages);
     setIsStreaming(true);
 
-    // Create placeholder for assistant answer
     const assistantMsgIndex = newMessages.length;
     const emptyAssistantMsg: Message = {
       role: "assistant",
@@ -89,6 +99,15 @@ const QueryPage: React.FC = () => {
                 };
                 return updated;
               });
+            } else if (parsed.type === "sources") {
+              setMessages((prev) => {
+                const updated = [...prev];
+                updated[assistantMsgIndex] = {
+                  ...updated[assistantMsgIndex],
+                  sources: parsed.sources,
+                };
+                return updated;
+              });
             } else if (parsed.type === "error") {
               setMessages((prev) => {
                 const updated = [...prev];
@@ -105,7 +124,6 @@ const QueryPage: React.FC = () => {
         }
       }
 
-      // Handle end of stream
       setMessages((prev) => {
         const updated = [...prev];
         if (updated[assistantMsgIndex]) {
@@ -133,27 +151,72 @@ const QueryPage: React.FC = () => {
   };
 
   return (
-    <div className={styles["query-page"]}>
-      <div className={styles["messages-list"]}>
-        {messages.map((msg, idx) => (
-          <div key={idx} className={styles["message-item"]}>
-            {msg.role === "user" && (
-              <div className={styles["user-message"]}>问：{msg.content}</div>
-            )}
-            {msg.role === "assistant" && (
-              <AnswerDisplay
-                content={msg.content}
-                isStreaming={msg.isStreaming || false}
-              />
-            )}
+    <div className="flex flex-col h-full overflow-hidden">
+      <div className="px-8 py-5 border-b border-gray-200 bg-white shrink-0">
+        <h1 className="text-lg font-semibold text-gray-800">智能问答</h1>
+      </div>
+      <div className="flex-1 overflow-y-auto min-h-0">
+        {messages.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-full px-5 py-10 text-center">
+            <div className="text-5xl mb-4">
+              <SvgIcon name="robot" width="68" height="68" />
+            </div>
+            <h2 className="text-xl font-semibold text-gray-800 mb-2">
+              您好！我是智能问答助手
+            </h2>
+            <p className="text-sm text-gray-500 mb-8">
+              基于知识库的 AI 助手，随时为您解答问题
+            </p>
+            <div className="flex flex-wrap gap-2.5 justify-center max-w-md">
+              {EXAMPLE_QUESTIONS.map((q, i) => (
+                <button
+                  key={i}
+                  className="px-4 py-2.5 bg-white border border-gray-200 rounded-full text-[13px] text-gray-800 cursor-pointer transition-all duration-150 hover:border-indigo-500 hover:text-indigo-500 hover:bg-indigo-50"
+                  onClick={() => handleQuery(q)}
+                >
+                  {q}
+                </button>
+              ))}
+            </div>
           </div>
-        ))}
-        {messages.length === 0 && (
-          <div className={styles["empty-state"]}>请输入您想查询的问题</div>
+        ) : (
+          <div className="px-8 py-6 flex flex-col gap-6">
+            {messages.map((msg, idx) => (
+              <div
+                key={idx}
+                className={`flex gap-3 ${msg.role === "user" ? "flex-row-reverse" : "flex-row"}`}
+              >
+                <div className="w-9 h-9 rounded-full flex items-center justify-center text-lg shrink-0 bg-gray-200">
+                  <SvgIcon name={msg.role === "user" ? "user" : "robot"} />
+                </div>
+                <div
+                  className={`max-w-[75%] min-w-0 ${msg.role === "user" ? "flex flex-col items-end" : ""}`}
+                >
+                  {msg.role === "user" ? (
+                    <div className="bg-indigo-500 text-white px-4 py-2.5 rounded-[16px_16px_4px_16px] text-sm leading-relaxed wrap-break-word">
+                      {msg.content}
+                    </div>
+                  ) : (
+                    <AnswerDisplay
+                      content={msg.content}
+                      isStreaming={msg.isStreaming || false}
+                      sources={msg.sources}
+                    />
+                  )}
+                </div>
+              </div>
+            ))}
+            <div ref={messagesEndRef} />
+          </div>
         )}
       </div>
-      <div className={styles["chat-input-wrapper"]}>
-        <ChatInput onSend={handleQuery} disabled={isStreaming} />
+      <div className="px-8 pb-6 pt-4 shrink-0 bg-[#f5f7fa]">
+        <ChatInput
+          onSend={handleQuery}
+          disabled={isStreaming}
+          webSearchEnabled={webSearch}
+          onToggleWebSearch={() => setWebSearch((v) => !v)}
+        />
       </div>
     </div>
   );

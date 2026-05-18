@@ -1,34 +1,19 @@
 import React, { useState } from "react";
-import QueryPage from "./pages/QueryPage";
-import KnowledgePage from "./pages/KnowledgePage";
+import QueryPage from "@client/pages/QueryPage";
+import KnowledgePage from "@client/pages/KnowledgePage";
+import Sidebar from "@client/components/Sidebar";
 import "./index.css";
 
-type Tab = "query" | "knowledge";
+type Page = "query" | "knowledge";
 
 const App: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<Tab>("query");
+  const [activePage, setActivePage] = useState<Page>("query");
 
   return (
-    <div className="container">
-      <header className="header">
-        <h1 className="title">MAO-RAG 知识库问答系统</h1>
-        <nav className="nav">
-          <div
-            className={`tab ${activeTab === "query" ? "tabActive" : ""}`}
-            onClick={() => setActiveTab("query")}
-          >
-            智能问答
-          </div>
-          <div
-            className={`tab ${activeTab === "knowledge" ? "tabActive" : ""}`}
-            onClick={() => setActiveTab("knowledge")}
-          >
-            知识库管理
-          </div>
-        </nav>
-      </header>
-      <main className="main">
-        {activeTab === "query" ? <QueryPage /> : <KnowledgePage />}
+    <div className="flex h-screen overflow-hidden">
+      <Sidebar activePage={activePage} onPageChange={setActivePage} />
+      <main className="flex-1 min-w-0 bg-[#f5f7fa] flex flex-col overflow-hidden">
+        {activePage === "query" ? <QueryPage /> : <KnowledgePage />}
       </main>
     </div>
   );

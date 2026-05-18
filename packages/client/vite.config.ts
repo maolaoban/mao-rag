@@ -8,6 +8,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': resolve(__dirname, '../shared/src'),
+      '@client': resolve(__dirname, 'src'),
     },
   },
   server: {
