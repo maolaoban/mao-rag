@@ -4,7 +4,7 @@
   "private": true,
   "description": "",
   "scripts": {
-    "dev": "concurrently \"pnpm --filter mao-rag-server dev\" \"pnpm --filter mao-rag-client dev\"",
+    "dev": "concurrently --names \"server,client\"  \"pnpm --filter mao-rag-server dev\" \"pnpm --filter mao-rag-client dev\"",
     "dev:server": "pnpm --filter mao-rag-server dev",
     "dev:frontend": "pnpm --filter mao-rag-client dev",
     "build": "pnpm --filter mao-rag-client build",

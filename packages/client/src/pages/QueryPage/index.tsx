@@ -19,14 +19,13 @@ const EXAMPLE_QUESTIONS = [
 const QueryPage: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
-  const [webSearch, setWebSearch] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const handleQuery = async (question: string) => {
+  const handleQuery = async (question: string, isWebSearch: boolean) => {
     const userMsg: Message = { role: "user", content: question };
     const newMessages = [...messages, userMsg];
     setMessages(newMessages);
@@ -44,7 +43,7 @@ const QueryPage: React.FC = () => {
       const response = await fetch("/api/query", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question }),
+        body: JSON.stringify({ question, webSearch: Boolean(isWebSearch) }),
       });
 
       if (!response.ok) {
@@ -172,7 +171,7 @@ const QueryPage: React.FC = () => {
                 <button
                   key={i}
                   className="px-4 py-2.5 bg-white border border-gray-200 rounded-full text-[13px] text-gray-800 cursor-pointer transition-all duration-150 hover:border-indigo-500 hover:text-indigo-500 hover:bg-indigo-50"
-                  onClick={() => handleQuery(q)}
+                  onClick={() => handleQuery(q, false)}
                 >
                   {q}
                 </button>
@@ -210,13 +209,8 @@ const QueryPage: React.FC = () => {
           </div>
         )}
       </div>
-      <div className="px-8 pb-6 pt-4 shrink-0 bg-[#f5f7fa]">
-        <ChatInput
-          onSend={handleQuery}
-          disabled={isStreaming}
-          webSearchEnabled={webSearch}
-          onToggleWebSearch={() => setWebSearch((v) => !v)}
-        />
+      <div className=" px-8 pb-6 pt-4 shrink-0 bg-[#f5f7fa]">
+        <ChatInput onSend={handleQuery} disabled={isStreaming} />
       </div>
     </div>
   );

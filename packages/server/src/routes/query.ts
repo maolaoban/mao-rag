@@ -6,18 +6,21 @@ const queryRoutes = new Hono()
 // POST /api/query - 流式 RAG 问答
 queryRoutes.post('/api/query', async (c) => {
   try {
-    const { question } = await c.req.json()
+    const { question, webSearch } = await c.req.json()
 
     if (!question) {
       return c.json({ error: '问题不能为空' }, 400)
     }
+
+    console.log(`question: ${question}`);
+    console.log(`isWebSearch: ${webSearch}`);
 
     // Create a response stream
     const encoder = new TextEncoder()
     const stream = new ReadableStream({
       async start(controller) {
         try {
-          const result = await workflow.stream({ question }, { streamMode: 'messages' });
+          const result = await workflow.stream({ question, isWebSearch: Boolean(webSearch) }, { streamMode: 'messages' });
           for await (const [messageChunk, metadata] of result as any) {
             const content = messageChunk.content;
             controller.enqueue(encoder.encode(`${JSON.stringify({ type: 'answer', content })}\n\n`));
