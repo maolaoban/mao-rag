@@ -26,11 +26,21 @@
       "Bash(claude mcp:*)",
       "Bash(mkdir -p /Users/maopengchao/code/mao-rag/src/client/components/AnswerDisplay)",
       "Bash(mkdir -p /Users/maopengchao/code/mao-rag/src/client/pages/QueryPage)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(pnpm install:*)",
+      "Bash(pnpm:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "WebFetch(domain:docs.smith.langchain.com)",
+      "WebFetch(domain:www.figma.com)",
+      "WebFetch(domain:embed.figma.com)"
     ]
   },
   "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
     "supabase"
-  ]
+  ],
+  "enabledPlugins": {
+    "claude-hud@claude-hud": true
+  }
 }
