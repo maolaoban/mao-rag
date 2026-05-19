@@ -12,7 +12,9 @@
   },
   "packageManager": "pnpm@10.5.0",
   "devDependencies": {
-    "concurrently": "^9.2.1"
+    "@types/node": "^25.6.0",
+    "concurrently": "^9.2.1",
+    "typescript": "^5.9.3"
   },
   "dependencies": {
     "langsmith": "^0.7.1",
