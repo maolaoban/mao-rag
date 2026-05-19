@@ -39,5 +39,8 @@
   "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
     "supabase"
-  ]
+  ],
+  "enabledPlugins": {
+    "claude-hud@claude-hud": true
+  }
 }

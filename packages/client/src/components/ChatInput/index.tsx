@@ -43,7 +43,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
 
   return (
     <div className="w-full">
-      <div className="flex items-end gap-2.5 bg-white border border-gray-200 rounded-[14px] py-1.5 pl-4 pr-1.5 shadow-sm transition-all duration-150 focus-within:border-indigo-500 focus-within:shadow-[0_2px_12px_rgba(79,70,229,0.1)]">
+      <div className="flex items-center gap-2.5 bg-white border border-gray-200 rounded-[14px] py-1.5 pl-4 pr-1.5 shadow-sm transition-all duration-150 focus-within:border-indigo-500 focus-within:shadow-[0_2px_12px_rgba(79,70,229,0.1)]">
         <textarea
           ref={textareaRef}
           value={input}
