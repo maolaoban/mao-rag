@@ -1,16 +1,58 @@
-import { SupabaseVectorStore } from '@langchain/community/vectorstores/supabase'
-import { StateGraph, Annotation, START, END } from '@langchain/langgraph'
+import { SupabaseVectorStore } from '@langchain/community/vectorstores/supabase';
+import { StateGraph, Annotation, START, END } from '@langchain/langgraph';
 import { supabaseClient, model, embeddings } from './config';
 
+
+const hybridRetriever = async (query: string, topK: number = 5) => {
+  const queryEmbedding = await embeddings.embedQuery(query);
+
+  const { data, error } = await supabaseClient.rpc('hybrid_search', {
+    query_text: query,
+    query_embedding: queryEmbedding,
+    match_count: topK,        // 每个查询返回的结果数
+    rank_constant: 60,        // RRF 常数，默认 60
+  });
+
+  if (error) {
+    throw new Error(`混合检索失败: ${error.message}`);
+  }
+
+  // 1.3 转换为 LangChain 兼容的 Document 格式
+  return data.map((row: any) => ({
+    pageContent: row.content,
+    metadata: row.metadata || {},
+    id: row.id,
+    score: row.rrf_score,     // 保留融合分数便于调试
+  }));
+}
+
+// 普通相似性检索
+// const vectorStore = await SupabaseVectorStore.fromExistingIndex(embeddings, {
+//   client: supabaseClient,
+//   tableName: 'documents',
+//   queryName: 'match_documents',
+// })
+
 async function retrieve(state: typeof StateAnnotation.State) {
-  const vectorStore = await SupabaseVectorStore.fromExistingIndex(embeddings, {
-    client: supabaseClient,
-    tableName: 'documents',
-    queryName: 'match_documents',
-  })
-  const results = await vectorStore.similaritySearch(state.question, 2)
-  console.log('检索结果:', results)
-  return { ...state, documents: results }
+
+  // 原始 + 改写
+  const queries = state.rewrittenQuestion || [state.question]
+
+  // 并行执行多个查询的混合检索
+  const resultsArrays = await Promise.all(
+    queries.map(query => hybridRetriever(query, 5))
+  );
+
+  // 4. 合并所有结果
+  const results = resultsArrays.flat();
+
+  // 5. 按内容去重（避免不同查询召回同一文档块）
+  const uniqueResults = Array.from(
+    new Map(results.map(doc => [doc.pageContent, doc])).values()
+  );
+
+  console.log('检索结果:', uniqueResults)
+  return { ...state, documents: uniqueResults }
 }
 
 async function generate(state: typeof StateAnnotation.State) {
@@ -27,7 +69,7 @@ async function generate(state: typeof StateAnnotation.State) {
     用户问题：${state.question}
 
     请给出详细、准确的回答。回答内容来自知识库和网络搜索结果，不要编造信息。
-    回答内容引用自知识库还是网络搜索结果，请在回答中注明。`
+    如果引入网络搜索结果时需要做好标注。`
 
   // 直接调用 model.invoke，LangGraph 的 messages 模式会自动捕获 token 流
   const answer = await model.invoke([
@@ -103,9 +145,31 @@ const conditionalEdge = (state: typeof StateAnnotation.State) => {
   return state.isWebSearch ? 'webSearch' : 'generate'
 }
 
+// 查询改写
+const rewriteNode = async (state: typeof StateAnnotation.State) => {
+  const prompt = `请将以下用户问题改写为 3 个不同侧重点的搜索查询，每个查询一行，不要有多余的解释。
+      用户问题：${state.question}
+      输出格式：
+      查询1：...
+      查询2：...
+      查询3：...`;
+  const response = await model.invoke([
+    { role: 'user', content: prompt },
+  ]);
+  const content = response.content as string;
+  const lines = content.split('\n').filter(l => l.includes('：') || l.trim().length > 0);
+  // 提取冒号后面的部分
+  const queries = lines.map(l => l.split('：').pop()?.trim() || l.trim()).filter(q => q.length > 0);
+  // 至少保留原问题
+  const finalQueries = queries.length >= 2 ? queries : [state.question];
+  console.log('改写后的查询:', finalQueries);
+  return { ...state, rewrittenQuestion: finalQueries };
+}
+
 // RAG 图定义
 export const StateAnnotation = Annotation.Root({
   question: Annotation<string>(),
+  rewrittenQuestion: Annotation<string[]>(),
   isWebSearch: Annotation<boolean>(),
   documents: Annotation<any[]>({
     reducer: (_prev: any[], next: any[]) => next,
@@ -116,10 +180,12 @@ export const StateAnnotation = Annotation.Root({
 })
 
 const workflow = new StateGraph(StateAnnotation)
+  .addNode('rewriteQueries', rewriteNode)
   .addNode('retrieve', retrieve)
   .addNode("webSearch", webSearchNode)
   .addNode('generate', generate)
-  .addEdge(START, 'retrieve')
+  .addEdge(START, 'rewriteQueries')
+  .addEdge('rewriteQueries', 'retrieve')
   .addConditionalEdges('retrieve', conditionalEdge)
   .addEdge('webSearch', 'generate')
   .addEdge('generate', END)

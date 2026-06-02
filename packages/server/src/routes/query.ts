@@ -22,6 +22,8 @@ queryRoutes.post('/api/query', async (c) => {
         try {
           const result = await workflow.stream({ question, isWebSearch: Boolean(webSearch) }, { streamMode: 'messages' });
           for await (const [messageChunk, metadata] of result as any) {
+            // 只推送 generate 节点的输出，rewriteNode 的输出不暴露给用户
+            if (metadata.langgraph_node !== 'generate') continue;
             const content = messageChunk.content;
             controller.enqueue(encoder.encode(`${JSON.stringify({ type: 'answer', content })}\n\n`));
           }

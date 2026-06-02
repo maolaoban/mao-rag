@@ -33,7 +33,11 @@
       "Bash(git commit:*)",
       "WebFetch(domain:docs.smith.langchain.com)",
       "WebFetch(domain:www.figma.com)",
-      "WebFetch(domain:embed.figma.com)"
+      "WebFetch(domain:embed.figma.com)",
+      "mcp__supabase__list_extensions",
+      "mcp__supabase__list_migrations",
+      "mcp__supabase__execute_sql",
+      "mcp__supabase__apply_migration"
     ]
   },
   "enableAllProjectMcpServers": true,

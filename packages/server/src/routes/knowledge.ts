@@ -1,7 +1,7 @@
-import { Hono } from 'hono'
-import path from 'path'
-import fs from 'fs'
-import { supabaseClient } from '../config'
+import { Hono } from 'hono';
+import path from 'path';
+import fs from 'fs';
+import { supabaseClient } from '../config';
 import {
   loadVectorStore,
   processFile,
@@ -12,9 +12,10 @@ import {
   setImportStatus,
   getImportMessage,
   setImportMessage,
-} from '../knowledge'
+} from '../vector';
+import dayjs from 'dayjs';
 
-const knowledgeRoutes = new Hono()
+const knowledgeRoutes = new Hono();
 
 // GET /api/knowledge/files - 查询已导入文件列表
 knowledgeRoutes.get('/api/knowledge/files', async (c) => {
@@ -40,7 +41,7 @@ knowledgeRoutes.get('/api/knowledge/files', async (c) => {
         filesMap.set(source, {
           name: source,
           chunks: 1,
-          uploadedAt: doc.uploaded_at,
+          uploadedAt: dayjs(doc.uploaded_at).format('YYYY-MM-DD HH:mm:ss') || '',
         })
       }
     }
@@ -56,52 +57,6 @@ knowledgeRoutes.get('/api/knowledge/files', async (c) => {
   }
 })
 
-// POST /api/knowledge/import - 触发导入
-knowledgeRoutes.post('/api/knowledge/import', async (c) => {
-  if (getImportRunning()) {
-    return c.json({ error: '导入正在进行中，请稍后再试' }, 409)
-  }
-
-  setImportRunning(true)
-  setImportStatus('running')
-  setImportMessage('')
-
-  try {
-    const knowledgeDir = process.env.KNOWLEDGE_DIR || './knowledge'
-    const vectorStore = await loadVectorStore()
-
-    const files = fs.readdirSync(knowledgeDir)
-      .filter((f: string) => f.endsWith('.md'))
-      .map((f: string) => path.join(knowledgeDir, f))
-
-    if (files.length === 0) {
-      setImportStatus('error')
-      setImportMessage('未找到 .md 文件')
-      return c.json({ error: '未找到知识文件' }, 404)
-    }
-
-    const fileContents = files.map(fp => ({
-      name: path.basename(fp),
-      content: fs.readFileSync(fp, 'utf-8'),
-    }))
-
-    const { results, totalChunks } = await processFiles(vectorStore, fileContents)
-
-    setImportStatus('success')
-    const msg = `导入完成！共导入 ${results.length} 个文件，${totalChunks} 个文本块`
-    setImportMessage(msg)
-    return c.json({ success: true, message: msg, results, totalChunks })
-  } catch (err) {
-    setImportStatus('error')
-    const msg = err instanceof Error ? err.message : '导入失败'
-    setImportMessage(msg)
-    console.error('Import error:', err)
-    return c.json({ error: msg }, 500)
-  } finally {
-    setImportRunning(false)
-  }
-})
-
 // POST /api/knowledge/import-url — 从 URL 导入
 knowledgeRoutes.post('/api/knowledge/import-url', async (c) => {
   if (getImportRunning()) {
@@ -110,7 +65,7 @@ knowledgeRoutes.post('/api/knowledge/import-url', async (c) => {
 
   setImportRunning(true)
   setImportStatus('running')
-  setImportMessage('')
+  setImportMessage('正在导入...')
 
   try {
     const body = await c.req.json()
@@ -168,7 +123,7 @@ knowledgeRoutes.post('/api/knowledge/import-upload', async (c) => {
 
   setImportRunning(true)
   setImportStatus('running')
-  setImportMessage('')
+  setImportMessage('正在上传导入...')
 
   try {
     const formData = await c.req.formData()

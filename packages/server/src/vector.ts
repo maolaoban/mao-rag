@@ -33,7 +33,7 @@ export async function processFile(vectorStore: any, filename: string, content: s
     await vectorStore.addDocuments(docs.slice(i, i + BATCH_SIZE))
   }
 
-  console.log(`  ✅ ${filename} → ${chunks.length} chunks`)
+  console.log(`OK：${filename} → ${chunks.length} chunks`)
   return { name: filename, chunks: chunks.length, status: 'success' }
 }
 

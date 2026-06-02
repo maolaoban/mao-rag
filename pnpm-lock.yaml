@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      dotenv:
+        specifier: ^17.4.2
+        version: 17.4.2
       langsmith:
         specifier: ^0.7.1
         version: 0.7.1(openai@6.34.0(ws@8.20.0)(zod@4.3.6))(ws@8.20.0)
@@ -85,9 +88,9 @@ importers:
       '@supabase/supabase-js':
         specifier: ^2.104.1
         version: 2.104.1
-      dotenv:
-        specifier: ^17.4.2
-        version: 17.4.2
+      dayjs:
+        specifier: ^1.11.20
+        version: 1.11.20
       hono:
         specifier: ^4.12.15
         version: 4.12.15
@@ -4098,7 +4101,7 @@ snapshots:
       jsonwebtoken: 9.0.3
       load-esm: 1.0.3
       mime-types: 2.1.35
-      retry-axios: 2.6.0(axios@1.15.2(debug@4.4.3))
+      retry-axios: 2.6.0(axios@1.15.2)
       tough-cookie: 4.1.4
     transitivePeerDependencies:
       - supports-color
@@ -4852,7 +4855,7 @@ snapshots:
 
   resolve-pkg-maps@1.0.0: {}
 
-  retry-axios@2.6.0(axios@1.15.2(debug@4.4.3)):
+  retry-axios@2.6.0(axios@1.15.2):
     dependencies:
       axios: 1.15.2(debug@4.4.3)
 
