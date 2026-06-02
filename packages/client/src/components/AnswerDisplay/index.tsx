@@ -5,18 +5,20 @@ type AnswerDisplayProps = {
   content: string;
   isStreaming: boolean;
   sources?: string[];
+  statusMessage?: string;
 };
 
 const AnswerDisplay: React.FC<AnswerDisplayProps> = ({
   content,
   isStreaming,
   sources,
+  statusMessage,
 }) => {
   return (
     <div className="bg-white border border-gray-200 rounded-[16px_16px_16px_4px] px-4.5 py-3.5 text-sm leading-[1.7] text-gray-800 wrap-break-word">
       <div className="min-h-5">
         {isStreaming && !content ? (
-          <span className="text-indigo-500 text-[13px]">正在思考...</span>
+          <span className="text-indigo-500 text-[13px]">{statusMessage || '正在思考...'}</span>
         ) : (
           <Streamdown isAnimating={isStreaming}>{content}</Streamdown>
         )}

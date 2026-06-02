@@ -8,6 +8,7 @@ type Message = {
   content: string;
   isStreaming?: boolean;
   sources?: string[];
+  statusMessage?: string;
 };
 
 const EXAMPLE_QUESTIONS = [
@@ -88,7 +89,16 @@ const QueryPage: React.FC = () => {
 
           try {
             const parsed = JSON.parse(data);
-            if (parsed.type === "answer") {
+            if (parsed.type === "status") {
+              setMessages((prev) => {
+                const updated = [...prev];
+                updated[assistantMsgIndex] = {
+                  ...updated[assistantMsgIndex],
+                  statusMessage: parsed.message,
+                };
+                return updated;
+              });
+            } else if (parsed.type === "answer") {
               fullContent += parsed.content;
               setMessages((prev) => {
                 const updated = [...prev];
@@ -200,6 +210,7 @@ const QueryPage: React.FC = () => {
                       content={msg.content}
                       isStreaming={msg.isStreaming || false}
                       sources={msg.sources}
+                      statusMessage={msg.statusMessage}
                     />
                   )}
                 </div>
