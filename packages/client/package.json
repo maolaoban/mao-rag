@@ -12,6 +12,7 @@
     "mao-rag-shared": "workspace:*",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
+    "react-textarea-autosize": "^8.5.9",
     "streamdown": "^2.5.0"
   },
   "devDependencies": {

@@ -25,7 +25,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activePage, onPageChange }) => {
             key={item.page}
             className={`flex items-center gap-2.5 px-3.5 py-2.5 border-none text-sm font-medium cursor-pointer rounded-lg transition-all duration-150 text-left ${
               activePage === item.page
-                ? "bg-indigo-500 text-white hover:text-indigo-500"
+                ? "bg-indigo-500 text-white"
                 : "bg-transparent text-white/70 hover:bg-white/6 hover:text-white"
             }`}
             onClick={() => onPageChange(item.page as Page)}

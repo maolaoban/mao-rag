@@ -12,7 +12,10 @@ const app = new Hono()
 
 // CORS
 app.use('/*', cors({
-  origin: ['http://localhost:5173', 'http://localhost:3000'],
+  origin: [`http://localhost:${process.env.CLIENT_PORT}`,
+  `http://127.0.0.1:${process.env.CLIENT_PORT}`,
+  `http://localhost:${process.env.SERVER_PORT}`,
+  `http://127.0.0.1:${process.env.SERVER_PORT}`],
   allowHeaders: ['Content-Type', 'Accept'],
   allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   exposeHeaders: ['Content-Length', 'Content-Type'],
@@ -39,7 +42,7 @@ app.get('*', async (c) => {
 
 // ==================== Server Start ====================
 
-const PORT = parseInt(process.env.PORT || '3000')
+const PORT = parseInt(process.env.SERVER_PORT || '4000')
 
 const server = serve({
   fetch: app.fetch,
@@ -47,6 +50,6 @@ const server = serve({
 })
 
 console.log(`RAG服务运行在 http://localhost:${PORT}`)
-console.log(`前端页面: http://localhost:5173 (通过 Vite HMR)`)
+console.log(`前端页面: http://localhost:${process.env.CLIENT_PORT} (通过 Vite HMR)`)
 
 export { app, server }

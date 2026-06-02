@@ -4,17 +4,30 @@ import { SvgIcon } from "@client/components/SvgIcon";
 
 type ImportMethod = "url" | "upload";
 
+const statusClasses = {
+  running: "bg-blue-50 text-blue-500 border border-blue-200",
+  success: "bg-green-50 text-green-600 border border-green-200",
+  error: "bg-red-50 text-red-600 border border-red-200",
+};
+
+const ALLOWED_EXTENSIONS = ["md"];
+
 const KnowledgePage: React.FC = () => {
   const [files, setFiles] = useState<KnowledgeFile[]>([]);
+
   const [loading, setLoading] = useState(true);
+
   const [importing, setImporting] = useState(false);
+
   const [importStatus, setImportStatus] = useState<{
     status: "idle" | "running" | "success" | "error";
     message: string;
   }>({ status: "idle", message: "" });
 
   const [importMethod, setImportMethod] = useState<ImportMethod>("url");
+
   const [urlInput, setUrlInput] = useState("");
+
   const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null);
 
   const fetchFiles = async () => {
@@ -78,6 +91,17 @@ const KnowledgePage: React.FC = () => {
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
+    // 判断文件格式，目前仅支持md
+    for (let i = 0; i < files.length; i++) {
+      const ext = files[i].name.split(".").pop()?.toLowerCase();
+      if (!ext || !ALLOWED_EXTENSIONS.includes(ext)) {
+        setImportStatus({
+          status: "error",
+          message: `不支持的文件格式: ${files[i].name}`,
+        });
+        return;
+      }
+    }
     setSelectedFiles(files);
   };
 
@@ -97,27 +121,12 @@ const KnowledgePage: React.FC = () => {
         method: "POST",
         body: formData,
       });
+      setSelectedFiles(null);
     } catch (err) {
       console.error("Upload failed:", err);
       setImportStatus({ status: "error", message: (err as Error).message });
       setImporting(false);
     }
-  };
-
-  const handleImport = async () => {
-    if (importMethod === "url") {
-      await handleImportUrl();
-    } else {
-      await handleImportUpload();
-    }
-  };
-
-  const totalChunks = files.reduce((sum, f) => sum + f.chunks, 0);
-
-  const statusClasses = {
-    running: "bg-blue-50 text-blue-500 border border-blue-200",
-    success: "bg-green-50 text-green-600 border border-green-200",
-    error: "bg-red-50 text-red-600 border border-red-200",
   };
 
   return (
@@ -129,7 +138,7 @@ const KnowledgePage: React.FC = () => {
         {/* Import Card */}
         <div className="bg-white rounded-xl px-6 py-5 shadow-sm">
           <div className="text-[15px] font-semibold text-gray-800 mb-4">
-            📥 导入知识
+            <SvgIcon name="upload" text="导入知识" />
           </div>
           <div className="flex gap-2 mb-3.5">
             <button
@@ -140,7 +149,7 @@ const KnowledgePage: React.FC = () => {
               }`}
               onClick={() => setImportMethod("url")}
             >
-              🔗 URL 导入
+              URL 导入
             </button>
             <button
               className={`px-4 py-2 border rounded-lg text-[13px] cursor-pointer transition-all duration-150 ${
@@ -165,9 +174,9 @@ const KnowledgePage: React.FC = () => {
                 className="flex-1 px-3.5 py-2.5 border border-gray-200 rounded-lg text-sm outline-none transition-colors duration-150 focus:border-indigo-500"
               />
               <button
-                onClick={handleImport}
+                onClick={handleImportUrl}
                 disabled={importing}
-                className="px-5 py-2.5 text-indigo-500 text-white border-none rounded-lg text-sm font-medium cursor-pointer transition-colors duration-150 hover:bg-indigo-700 disabled:bg-indigo-300 disabled:cursor-not-allowed whitespace-nowrap"
+                className="px-5 py-2.5 bg-indigo-500 text-white border-none rounded-lg text-sm font-medium cursor-pointer transition-colors duration-150 hover:bg-indigo-700 disabled:bg-indigo-300 disabled:cursor-not-allowed whitespace-nowrap"
               >
                 {importing ? "导入中..." : "导入"}
               </button>
@@ -177,11 +186,10 @@ const KnowledgePage: React.FC = () => {
               <label className="flex-1 p-3 border-2 border-dashed border-gray-200 rounded-lg text-center cursor-pointer text-[13px] text-gray-500 transition-colors duration-150 hover:border-indigo-500">
                 {selectedFiles
                   ? `已选择 ${selectedFiles.length} 个文件`
-                  : "点击选择文件，或拖拽文件到这里"}
+                  : "点击选择文件"}
                 <input
                   type="file"
-                  multiple
-                  accept=".md,.txt,.json,.csv,.html"
+                  accept={ALLOWED_EXTENSIONS.map((ext) => `.${ext}`).join(",")}
                   onChange={handleUpload}
                   disabled={importing}
                   className="hidden"
@@ -190,9 +198,9 @@ const KnowledgePage: React.FC = () => {
               <button
                 onClick={handleImportUpload}
                 disabled={importing || !selectedFiles}
-                className="px-5 py-2.5 text-indigo-500 text-white border-none rounded-lg text-sm font-medium cursor-pointer transition-colors duration-150 hover:bg-indigo-700 disabled:bg-indigo-300 disabled:cursor-not-allowed whitespace-nowrap"
+                className="px-5 py-2.5 bg-indigo-500 text-white border-none rounded-lg text-sm font-medium cursor-pointer transition-colors duration-150 hover:bg-indigo-700 disabled:bg-indigo-300 disabled:cursor-not-allowed whitespace-nowrap"
               >
-                上传导入
+                上传
               </button>
             </div>
           )}
@@ -204,28 +212,6 @@ const KnowledgePage: React.FC = () => {
               {importStatus.message}
             </div>
           )}
-        </div>
-
-        {/* Stats */}
-        <div className="grid grid-cols-3 gap-4">
-          <div className="bg-white rounded-xl p-5 text-center shadow-sm">
-            <div className="text-2xl font-bold text-indigo-500 mb-1">
-              {files.length}
-            </div>
-            <div className="text-[13px] text-gray-500">文件</div>
-          </div>
-          <div className="bg-white rounded-xl p-5 text-center shadow-sm">
-            <div className="text-2xl font-bold text-indigo-500 mb-1">
-              {totalChunks}
-            </div>
-            <div className="text-[13px] text-gray-500">文档块</div>
-          </div>
-          <div className="bg-white rounded-xl p-5 text-center shadow-sm">
-            <div className="text-2xl font-bold text-indigo-500 mb-1">
-              {importing ? "1" : "0"}
-            </div>
-            <div className="text-[13px] text-gray-500">导入中</div>
-          </div>
         </div>
 
         {/* File List */}

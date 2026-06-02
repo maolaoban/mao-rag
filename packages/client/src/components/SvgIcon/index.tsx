@@ -1,7 +1,15 @@
 import React from "react";
 
 type SvgIconProps = {
-  name: "question" | "robot" | "database" | "user" | "file" | "send" | "web";
+  name:
+    | "question"
+    | "robot"
+    | "database"
+    | "user"
+    | "file"
+    | "send"
+    | "web"
+    | "upload";
   width?: string;
   height?: string;
   text?: string;
@@ -14,7 +22,7 @@ export const SvgIcon: React.FC<SvgIconProps> = ({
   text,
 }) => {
   return (
-    <div className="flex">
+    <div className="flex items-center">
       {name === "question" && (
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -140,6 +148,25 @@ export const SvgIcon: React.FC<SvgIconProps> = ({
           <circle cx="12" cy="12" r="10"></circle>
           <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path>
           <path d="M2 12h20"></path>
+        </svg>
+      )}
+      {name === "upload" && (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width={width || "20"}
+          height={height || "20"}
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          data-fg-dt3h5="1.16:1.6639:/src/app/components/KnowledgeBaseManager.tsx:132:22:3000:10:e:Upload::::::4gZ"
+          data-fgid-dt3h5=":rb7:"
+        >
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="17 8 12 3 7 8"></polyline>
+          <line x1="12" x2="12" y1="3" y2="15"></line>
         </svg>
       )}
       {text && <span className="ml-2">{text}</span>}
