@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import ChatInput from "@client/components/ChatInput";
 import AnswerDisplay from "@client/components/AnswerDisplay";
 import { SvgIcon } from "@client/components/SvgIcon";
+import { useAuth } from "@client/context/AuthContext";
 
 type Message = {
   role: "user" | "assistant";
@@ -21,6 +22,7 @@ const QueryPage: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { session } = useAuth();
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -41,9 +43,14 @@ const QueryPage: React.FC = () => {
     setMessages([...newMessages, emptyAssistantMsg]);
 
     try {
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (session?.access_token) {
+        headers["Authorization"] = `Bearer ${session.access_token}`;
+      }
+
       const response = await fetch("/api/query", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify({ question, webSearch: Boolean(isWebSearch) }),
       });
 

@@ -6,6 +6,7 @@ import fs from 'fs'
 import { fileURLToPath } from 'url'
 import queryRoutes from './routes/query'
 import knowledgeRoutes from './routes/knowledge'
+import { authMiddleware } from './auth'
 
 // Hono
 const app = new Hono()
@@ -16,10 +17,13 @@ app.use('/*', cors({
   `http://127.0.0.1:${process.env.CLIENT_PORT}`,
   `http://localhost:${process.env.SERVER_PORT}`,
   `http://127.0.0.1:${process.env.SERVER_PORT}`],
-  allowHeaders: ['Content-Type', 'Accept'],
+  allowHeaders: ['Content-Type', 'Accept', 'Authorization'],
   allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   exposeHeaders: ['Content-Length', 'Content-Type'],
 }))
+
+// API 路由认证保护
+app.use('/api/*', authMiddleware)
 
 // 注册路由
 app.route('/', queryRoutes)
