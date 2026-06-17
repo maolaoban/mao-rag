@@ -38,7 +38,7 @@ queryRoutes.post('/api/query', async (c) => {
               const nodeName = Object.keys(chunkData)[0]
               switch (nodeName) {
                 case 'rewriteQueries':
-                  controller.enqueue(encoder.encode(statusMessage('retrieving', '正在检索知识库...')))
+                  controller.enqueue(encoder.encode(statusMessage('retrieving', '正在分析问题...')))
                   break
                 case 'retrieve':
                   if (isWebSearch) {

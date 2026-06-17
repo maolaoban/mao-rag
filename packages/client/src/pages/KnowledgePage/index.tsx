@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from "react";
 import type { KnowledgeFile } from "mao-rag-shared";
 import { SvgIcon } from "@client/components/SvgIcon";
+import { useAuth } from "@client/context/AuthContext";
+
+interface KnowledgePageProps {
+  onLoginClick: () => void
+}
 
 type ImportMethod = "url" | "upload";
 
@@ -12,7 +17,7 @@ const statusClasses = {
 
 const ALLOWED_EXTENSIONS = ["md"];
 
-const KnowledgePage: React.FC = () => {
+const KnowledgePage: React.FC<KnowledgePageProps> = ({ onLoginClick }) => {
   const [files, setFiles] = useState<KnowledgeFile[]>([]);
 
   const [loading, setLoading] = useState(true);
@@ -30,9 +35,32 @@ const KnowledgePage: React.FC = () => {
 
   const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null);
 
+  const [notLoggedIn, setNotLoggedIn] = useState(false);
+
+  const { session } = useAuth();
+
+  const authHeaders = (extra?: Record<string, string>): Record<string, string> => {
+    const headers: Record<string, string> = { ...extra };
+    if (session?.access_token) {
+      headers["Authorization"] = `Bearer ${session.access_token}`;
+    }
+    return headers;
+  };
+
+  const checkUnauthorized = (status: number) => {
+    if (status === 401) {
+      setNotLoggedIn(true)
+      return true
+    }
+    return false
+  }
+
   const fetchFiles = async () => {
     try {
-      const response = await fetch("/api/knowledge/files");
+      const response = await fetch("/api/knowledge/files", {
+        headers: authHeaders(),
+      });
+      if (checkUnauthorized(response.status)) return
       const data = await response.json();
       if (data.files) {
         setFiles(data.files);
@@ -52,7 +80,14 @@ const KnowledgePage: React.FC = () => {
     if (importing) {
       const interval = setInterval(async () => {
         try {
-          const response = await fetch("/api/knowledge/import-status");
+          const response = await fetch("/api/knowledge/import-status", {
+            headers: authHeaders(),
+          });
+          if (checkUnauthorized(response.status)) {
+            clearInterval(interval);
+            setImporting(false);
+            return;
+          }
           const data = await response.json();
           setImportStatus(data);
           if (data.status === "success" || data.status === "error") {
@@ -76,11 +111,15 @@ const KnowledgePage: React.FC = () => {
     setImporting(true);
     setImportStatus({ status: "running", message: "从 URL 导入中..." });
     try {
-      await fetch("/api/knowledge/import-url", {
+      const response = await fetch("/api/knowledge/import-url", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: authHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({ url: urlInput.trim() }),
       });
+      if (checkUnauthorized(response.status)) {
+        setImporting(false);
+        return;
+      }
     } catch (err) {
       console.error("Import failed:", err);
       setImportStatus({ status: "error", message: (err as Error).message });
@@ -117,10 +156,16 @@ const KnowledgePage: React.FC = () => {
       for (let i = 0; i < selectedFiles.length; i++) {
         formData.append("files", selectedFiles[i]);
       }
-      await fetch("/api/knowledge/import-upload", {
+      const response = await fetch("/api/knowledge/import-upload", {
         method: "POST",
+        headers: authHeaders(),
         body: formData,
       });
+      if (checkUnauthorized(response.status)) {
+        setImporting(false);
+        setSelectedFiles(null);
+        return;
+      }
       setSelectedFiles(null);
     } catch (err) {
       console.error("Upload failed:", err);
@@ -135,7 +180,25 @@ const KnowledgePage: React.FC = () => {
         <h1 className="text-lg font-semibold text-gray-800">知识库管理</h1>
       </div>
       <div className="flex-1 overflow-y-auto px-8 py-6 flex flex-col gap-5">
+        {/* 未登录提示 */}
+        {notLoggedIn && (
+          <div className="bg-white rounded-xl px-6 py-8 shadow-sm flex flex-col items-center justify-center gap-4">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+            </svg>
+            <p className="text-sm text-gray-500">请先登录后使用知识库管理功能</p>
+            <button
+              onClick={onLoginClick}
+              className="px-5 py-2 bg-indigo-500 text-white border-none rounded-lg text-sm font-medium cursor-pointer transition-colors hover:bg-indigo-600"
+            >
+              登录
+            </button>
+          </div>
+        )}
+
         {/* Import Card */}
+        {!notLoggedIn && (<>
         <div className="bg-white rounded-xl px-6 py-5 shadow-sm">
           <div className="text-[15px] font-semibold text-gray-800 mb-4">
             <SvgIcon name="upload" text="导入知识" />
@@ -263,6 +326,7 @@ const KnowledgePage: React.FC = () => {
             </table>
           )}
         </div>
+        </>)}
       </div>
     </div>
   );

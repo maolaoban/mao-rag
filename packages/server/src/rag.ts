@@ -1,5 +1,5 @@
 import { SupabaseVectorStore } from '@langchain/community/vectorstores/supabase';
-import { StateGraph, Annotation, START, END } from '@langchain/langgraph';
+import { StateGraph, Annotation, START, END, MemorySaver } from '@langchain/langgraph';
 import { supabaseClient, model, embeddings } from './config';
 
 
@@ -165,6 +165,8 @@ const rewriteNode = async (state: typeof StateAnnotation.State) => {
   console.log('改写后的查询:', finalQueries);
   return { ...state, rewrittenQuestion: finalQueries };
 }
+
+const checkPointer = new MemorySaver();
 
 // RAG 图定义
 export const StateAnnotation = Annotation.Root({
